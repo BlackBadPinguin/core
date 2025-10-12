@@ -274,6 +274,7 @@ class ConversationProcessView(http.HomeAssistantView):
         vol.Required("type"): "conversation/chat_log/subscribe",
     }
 )
+@websocket_api.require_admin
 def websocket_subscribe_chat_logs(
     hass: HomeAssistant,
     connection: websocket_api.ActiveConnection,

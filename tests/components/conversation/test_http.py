@@ -26,7 +26,7 @@ from homeassistant.setup import async_setup_component
 
 from . import MockAgent
 
-from tests.common import async_mock_service
+from tests.common import MockUser, async_mock_service
 from tests.typing import ClientSessionGenerator, WebSocketGenerator
 
 AGENT_ID_OPTIONS = [
@@ -620,8 +620,21 @@ async def test_ws_chat_log_subscription(
     ):
         conversation_id = session.conversation_id
 
-    # We should have received 1 message:
-    # 1. The user input content added event
+    # We should receive 3 events:
+    # 1. The CREATED event (fired before content is added)
+    msg = await client.receive_json()
+    assert msg == {
+        "type": "event",
+        "event_type": "created",
+        "data": {
+            "chat_log": {
+                "conversation_id": conversation_id,
+                "continue_conversation": False,
+            }
+        },
+    }
+
+    # 2. The user input content added event
     msg = await client.receive_json()
     assert msg == {
         "type": "event",
@@ -634,3 +647,31 @@ async def test_ws_chat_log_subscription(
             },
         },
     }
+
+    # 3. The DELETED event (since no assistant message was added)
+    msg = await client.receive_json()
+    assert msg == {
+        "type": "event",
+        "event_type": "deleted",
+        "data": {
+            "conversation_id": conversation_id,
+        },
+    }
+
+
+async def test_ws_chat_log_subscription_requires_admin(
+    hass: HomeAssistant,
+    init_components,
+    hass_ws_client: WebSocketGenerator,
+    hass_admin_user: MockUser,
+) -> None:
+    """Test that chat log subscription requires admin access."""
+    # Create a non-admin user
+    hass_admin_user.groups = []
+    client = await hass_ws_client(hass)
+
+    await client.send_json_auto_id({"type": "conversation/chat_log/subscribe"})
+    msg = await client.receive_json()
+
+    assert not msg["success"]
+    assert msg["error"]["code"] == "unauthorized"
