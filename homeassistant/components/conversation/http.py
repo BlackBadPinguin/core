@@ -20,6 +20,7 @@ from .agent_manager import (
     async_get_agent,
     get_agent_manager,
 )
+from .chat_log import async_subscribe_chat_logs
 from .const import DATA_COMPONENT
 from .entity import ConversationEntity
 from .models import ConversationInput
@@ -35,6 +36,7 @@ def async_setup(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_list_sentences)
     websocket_api.async_register_command(hass, websocket_hass_agent_debug)
     websocket_api.async_register_command(hass, websocket_hass_agent_language_scores)
+    websocket_api.async_register_command(hass, websocket_subscribe_chat_logs)
 
 
 @websocket_api.websocket_command(
@@ -265,3 +267,27 @@ class ConversationProcessView(http.HomeAssistantView):
         )
 
         return self.json(result.as_dict())
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "conversation/chat_log/subscribe",
+    }
+)
+def websocket_subscribe_chat_logs(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Subscribe to all chat logs."""
+
+    @callback
+    def forward_events(event_type: str, data: dict) -> None:
+        """Forward chat log events to websocket connection."""
+        connection.send_message(
+            {"type": "event", "event_type": event_type, "data": data}
+        )
+
+    unsubscribe = async_subscribe_chat_logs(hass, forward_events)
+    connection.subscriptions[msg["id"]] = unsubscribe
+    connection.send_result(msg["id"])

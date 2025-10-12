@@ -26,7 +26,19 @@ SERVICE_RELOAD = "reload"
 DATA_COMPONENT: HassKey[EntityComponent[ConversationEntity]] = HassKey(DOMAIN)
 
 
+from homeassistant.const import StrEnum
+
+
 class ConversationEntityFeature(IntFlag):
     """Supported features of the conversation entity."""
 
     CONTROL = 1
+
+
+class ChatLogEventType(StrEnum):
+    """Chat log event type."""
+
+    CREATED = "created"
+    UPDATED = "updated"
+    DELETED = "deleted"
+    CONTENT_ADDED = "content_added"

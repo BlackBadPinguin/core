@@ -590,3 +590,18 @@ async def test_ws_hass_language_scores_with_filter(
     # GB English should be preferred
     result = msg["result"]
     assert result["preferred_language"] == "en-GB"
+
+
+async def test_ws_subscribe_chat_logs(
+    hass: HomeAssistant,
+    init_components,
+    hass_ws_client: WebSocketGenerator,
+) -> None:
+    """Test the Websocket subscribe to chat logs API."""
+    client = await hass_ws_client(hass)
+
+    await client.send_json_auto_id({"type": "conversation/chat_log/subscribe"})
+
+    msg = await client.receive_json()
+
+    assert msg["success"]

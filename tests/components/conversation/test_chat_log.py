@@ -22,7 +22,10 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import chat_session, llm
 from homeassistant.util import dt as dt_util
 
+from homeassistant.setup import async_setup_component
+
 from tests.common import async_fire_time_changed
+from tests.typing import WebSocketGenerator
 
 
 async def test_cleanup(
@@ -741,3 +744,62 @@ async def test_chat_log_continue_conversation(
             )
         )
         assert chat_log.continue_conversation is True
+
+
+async def test_notifications(
+    hass: HomeAssistant,
+    mock_conversation_input: ConversationInput,
+    hass_ws_client: WebSocketGenerator,
+    snapshot: SnapshotAssertion,
+) -> None:
+    """Test that we send notifications."""
+    assert await async_setup_component(hass, "homeassistant", {})
+    assert await async_setup_component(hass, "conversation", {})
+    client = await hass_ws_client(hass)
+
+    await client.send_json_auto_id({"type": "conversation/chat_log/subscribe"})
+    msg = await client.receive_json()
+    assert msg["success"]
+
+    with (
+        chat_session.async_get_chat_session(hass) as session,
+        async_get_chat_log(hass, session, mock_conversation_input),
+    ):
+        conversation_id = session.conversation_id
+
+    # We should have received 2 messages:
+    # 1. The user input
+    # 2. The chat log created
+    for _ in range(2):
+        msg = await client.receive_json()
+        assert msg == snapshot
+
+    # Trigger an update
+    with async_get_chat_log(hass, session) as chat_log:
+        await chat_log.async_provide_llm_data(
+            mock_conversation_input.as_llm_context("test"),
+        )
+        chat_log.async_add_assistant_content_without_tools(
+            AssistantContent(
+                agent_id="mock-agent-id",
+                content="Bye!",
+            )
+        )
+
+    # We should have received 2 messages:
+    # 1. The properties updated
+    # 2. The assistant response
+    for _ in range(2):
+        msg = await client.receive_json()
+        assert msg == snapshot
+
+    # Trigger cleanup
+    hass.data[chat_session.DATA_CHAT_SESSION][conversation_id].last_updated = (
+        dt_util.utcnow() + chat_session.CONVERSATION_TIMEOUT
+    )
+    async_fire_time_changed(
+        hass,
+        dt_util.utcnow() + chat_session.CONVERSATION_TIMEOUT * 2 + timedelta(seconds=1),
+    )
+    msg = await client.receive_json()
+    assert msg == snapshot

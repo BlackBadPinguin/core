@@ -250,6 +250,45 @@
     }),
   ])
 # ---
+# name: test_notifications
+  dict({
+    'data': dict({
+      'content': dict({
+        'content': 'Hello',
+        'role': 'user',
+      }),
+      'conversation_id': '01K7CPM186HSKC89EQ4Q7GRRGY',
+    }),
+    'event_type': 'content_added',
+    'type': 'event',
+  })
+# ---
+# name: test_notifications.1
+  dict({
+    'data': dict({
+      'content': dict({
+        'agent_id': 'mock-agent-id',
+        'content': 'Hey!',
+        'role': 'assistant',
+      }),
+      'conversation_id': '01K7CPM186HSKC89EQ4Q7GRRGY',
+    }),
+    'event_type': 'content_added',
+    'type': 'event',
+  })
+# ---
+# name: test_notifications.2
+  dict({
+    'data': dict({
+      'chat_log': dict({
+        'continue_conversation': False,
+        'conversation_id': '01K7CPM186HSKC89EQ4Q7GRRGY',
+      }),
+    }),
+    'event_type': 'created',
+    'type': 'event',
+  })
+# ---
 # name: test_template_error
   dict({
     'continue_conversation': False,
