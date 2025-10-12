@@ -24,9 +24,9 @@ from .const import ChatLogEventType
 from .models import ConversationInput, ConversationResult
 
 DATA_CHAT_LOGS: HassKey[dict[str, ChatLog]] = HassKey("conversation_chat_logs")
-SUBSCRIPTIONS: HassKey[
-    list[Callable[[ChatLogEventType, dict[str, Any]], None]]
-] = HassKey("conversation_chat_log_subscriptions")
+SUBSCRIPTIONS: HassKey[list[Callable[[ChatLogEventType, dict[str, Any]], None]]] = (
+    HassKey("conversation_chat_log_subscriptions")
+)
 LOGGER = logging.getLogger(__name__)
 
 current_chat_log: ContextVar[ChatLog | None] = ContextVar(
@@ -97,6 +97,8 @@ def async_get_chat_log(
         all_chat_logs = {}
         hass.data[DATA_CHAT_LOGS] = all_chat_logs
 
+    is_new_log = session.conversation_id not in all_chat_logs
+
     if chat_log := all_chat_logs.get(session.conversation_id):
         chat_log = replace(chat_log, content=chat_log.content.copy())
     else:
@@ -104,6 +106,12 @@ def async_get_chat_log(
 
     if chat_log_delta_listener:
         chat_log.delta_listener = chat_log_delta_listener
+
+    # Fire CREATED event for new chat logs before any content is added
+    if is_new_log:
+        _async_notify_subscribers(
+            hass, ChatLogEventType.CREATED, {"chat_log": chat_log.as_dict()}
+        )
 
     if user_input is not None:
         chat_log.async_add_user_content(UserContent(content=user_input.text))
@@ -118,9 +126,15 @@ def async_get_chat_log(
         LOGGER.debug(
             "Chat Log opened but no assistant message was added, ignoring update"
         )
+        # If this was a new log but nothing was added, fire DELETED to clean up
+        if is_new_log:
+            _async_notify_subscribers(
+                hass,
+                ChatLogEventType.DELETED,
+                {"conversation_id": session.conversation_id},
+            )
         return
 
-    is_new_log = session.conversation_id not in all_chat_logs
     if is_new_log:
 
         @callback
@@ -140,11 +154,9 @@ def async_get_chat_log(
 
     all_chat_logs[session.conversation_id] = chat_log
 
-    if is_new_log:
-        _async_notify_subscribers(
-            hass, ChatLogEventType.CREATED, {"chat_log": chat_log.as_dict()}
-        )
-    else:
+    # For new logs, CREATED was already fired before content was added
+    # For existing logs, fire UPDATED
+    if not is_new_log:
         _async_notify_subscribers(
             hass, ChatLogEventType.UPDATED, {"chat_log": chat_log.as_dict()}
         )
@@ -194,7 +206,7 @@ class UserContent:
 
     def as_dict(self) -> dict[str, Any]:
         """Return a dictionary representation of the content."""
-        result = {"role": self.role, "content": self.content}
+        result: dict[str, Any] = {"role": self.role, "content": self.content}
         if self.attachments:
             result["attachments"] = [
                 attachment.as_dict() for attachment in self.attachments

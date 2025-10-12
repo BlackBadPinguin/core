@@ -7,12 +7,21 @@ from unittest.mock import patch
 import pytest
 from syrupy.assertion import SnapshotAssertion
 
-from homeassistant.components.conversation import async_get_agent
+from homeassistant.components.conversation import (
+    ConversationInput,
+    async_get_agent,
+    async_get_chat_log,
+)
 from homeassistant.components.conversation.const import HOME_ASSISTANT_AGENT
 from homeassistant.components.light import DOMAIN as LIGHT_DOMAIN
 from homeassistant.const import ATTR_FRIENDLY_NAME
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import area_registry as ar, entity_registry as er, intent
+from homeassistant.helpers import (
+    area_registry as ar,
+    chat_session,
+    entity_registry as er,
+    intent,
+)
 from homeassistant.setup import async_setup_component
 
 from . import MockAgent
@@ -592,16 +601,36 @@ async def test_ws_hass_language_scores_with_filter(
     assert result["preferred_language"] == "en-GB"
 
 
-async def test_ws_subscribe_chat_logs(
+async def test_ws_chat_log_subscription(
     hass: HomeAssistant,
     init_components,
+    mock_conversation_input: ConversationInput,
     hass_ws_client: WebSocketGenerator,
 ) -> None:
-    """Test the Websocket subscribe to chat logs API."""
+    """Test that we can subscribe to chat logs."""
     client = await hass_ws_client(hass)
 
     await client.send_json_auto_id({"type": "conversation/chat_log/subscribe"})
-
     msg = await client.receive_json()
-
     assert msg["success"]
+
+    with (
+        chat_session.async_get_chat_session(hass) as session,
+        async_get_chat_log(hass, session, mock_conversation_input),
+    ):
+        conversation_id = session.conversation_id
+
+    # We should have received 1 message:
+    # 1. The user input content added event
+    msg = await client.receive_json()
+    assert msg == {
+        "type": "event",
+        "event_type": "content_added",
+        "data": {
+            "conversation_id": conversation_id,
+            "content": {
+                "content": "Hello",
+                "role": "user",
+            },
+        },
+    }
