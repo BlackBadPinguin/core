@@ -119,7 +119,7 @@ class TraccarEntity(TrackerEntity, RestoreEntity):
     def __init__(self, device, latitude, longitude, battery, accuracy, attributes):
         """Set up Traccar entity."""
         self._attr_location_accuracy = accuracy
-        self._attr_extra_state_attributes = attributes
+        self._attr_extra_state_attributes = attributes if attributes else {}
         self._device = device
         self._battery = battery
         self._attr_latitude = latitude
@@ -187,5 +187,8 @@ class TraccarEntity(TrackerEntity, RestoreEntity):
         self._attr_longitude = longitude
         self._battery = battery
         self._attr_location_accuracy = accuracy
-        self._attr_extra_state_attributes.update(attributes)
+        if attributes:
+            self._attr_extra_state_attributes = attributes.copy()
+        else:
+            self._attr_extra_state_attributes = {}
         self.async_write_ha_state()
