@@ -43,6 +43,11 @@
     }
   },
   "entity": {
+    "button": {
+      "quick_select": {
+        "name": "Quick select {number}"
+      }
+    },
     "number": {
       "bass": {
         "name": "Bass"
