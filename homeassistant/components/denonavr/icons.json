@@ -1,5 +1,19 @@
 {
   "entity": {
+    "number": {
+      "bass": {
+        "default": "mdi:equalizer"
+      },
+      "channel_volume": {
+        "default": "mdi:speaker"
+      },
+      "delay_time": {
+        "default": "mdi:timer-sand"
+      },
+      "treble": {
+        "default": "mdi:equalizer"
+      }
+    },
     "select": {
       "audio_restorer": {
         "default": "mdi:waveform"

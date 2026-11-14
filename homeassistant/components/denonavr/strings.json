@@ -43,6 +43,20 @@
     }
   },
   "entity": {
+    "number": {
+      "bass": {
+        "name": "Bass"
+      },
+      "channel_volume": {
+        "name": "{channel} level"
+      },
+      "delay_time": {
+        "name": "Audio delay"
+      },
+      "treble": {
+        "name": "Treble"
+      }
+    },
     "select": {
       "audio_restorer": {
         "name": "Audio restorer",
