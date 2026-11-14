@@ -151,6 +151,9 @@
   "exceptions": {
     "command_failed": {
       "message": "Sending the command to the receiver failed"
+    },
+    "invalid_remote_command": {
+      "message": "Invalid command {command}, valid commands are: {commands}"
     }
   },
   "options": {
