@@ -116,6 +116,17 @@
           "movie": "Movie"
         }
       }
+    },
+    "switch": {
+      "bt_transmitter": {
+        "name": "Bluetooth transmitter"
+      },
+      "graphic_eq": {
+        "name": "Graphic equalizer"
+      },
+      "headphone_eq": {
+        "name": "Headphone equalizer"
+      }
     }
   },
   "exceptions": {

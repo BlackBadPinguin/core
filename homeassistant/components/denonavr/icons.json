@@ -25,6 +25,17 @@
       "video_processing_mode": {
         "default": "mdi:video-input-component"
       }
+    },
+    "switch": {
+      "bt_transmitter": {
+        "default": "mdi:bluetooth-audio"
+      },
+      "graphic_eq": {
+        "default": "mdi:equalizer"
+      },
+      "headphone_eq": {
+        "default": "mdi:headphones"
+      }
     }
   },
   "services": {
