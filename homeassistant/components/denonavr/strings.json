@@ -42,6 +42,87 @@
       }
     }
   },
+  "entity": {
+    "select": {
+      "audio_restorer": {
+        "name": "Audio restorer",
+        "state": {
+          "high": "High",
+          "low": "Low",
+          "medium": "Medium",
+          "off": "[%key:common::state::off%]"
+        }
+      },
+      "auto_standby": {
+        "name": "Auto standby",
+        "state": {
+          "15m": "15 minutes",
+          "2h": "2 hours",
+          "30m": "30 minutes",
+          "4h": "4 hours",
+          "60m": "60 minutes",
+          "8h": "8 hours",
+          "off": "[%key:common::state::off%]"
+        }
+      },
+      "dimmer": {
+        "name": "Display brightness",
+        "state": {
+          "bright": "Bright",
+          "dark": "Dark",
+          "dim": "Dim",
+          "off": "[%key:common::state::off%]"
+        }
+      },
+      "eco_mode": {
+        "name": "Eco mode",
+        "state": {
+          "auto": "[%key:common::state::auto%]",
+          "off": "[%key:common::state::off%]",
+          "on": "[%key:common::state::on%]"
+        }
+      },
+      "hdmi_audio_decode": {
+        "name": "HDMI audio decode",
+        "state": {
+          "amp": "Receiver",
+          "tv": "TV"
+        }
+      },
+      "hdmi_output": {
+        "name": "HDMI monitor output",
+        "state": {
+          "auto": "[%key:common::state::auto%]",
+          "hdmi1": "HDMI 1",
+          "hdmi2": "HDMI 2"
+        }
+      },
+      "room_size": {
+        "name": "Room size",
+        "state": {
+          "l": "Large",
+          "m": "Medium",
+          "ml": "Medium large",
+          "ms": "Medium small",
+          "s": "Small"
+        }
+      },
+      "video_processing_mode": {
+        "name": "Video processing mode",
+        "state": {
+          "auto": "[%key:common::state::auto%]",
+          "bypass": "Bypass",
+          "game": "Game",
+          "movie": "Movie"
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "command_failed": {
+      "message": "Sending the command to the receiver failed"
+    }
+  },
   "options": {
     "step": {
       "init": {

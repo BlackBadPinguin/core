@@ -1,4 +1,32 @@
 {
+  "entity": {
+    "select": {
+      "audio_restorer": {
+        "default": "mdi:waveform"
+      },
+      "auto_standby": {
+        "default": "mdi:timer-outline"
+      },
+      "dimmer": {
+        "default": "mdi:brightness-6"
+      },
+      "eco_mode": {
+        "default": "mdi:leaf"
+      },
+      "hdmi_audio_decode": {
+        "default": "mdi:hdmi-port"
+      },
+      "hdmi_output": {
+        "default": "mdi:hdmi-port"
+      },
+      "room_size": {
+        "default": "mdi:floor-plan"
+      },
+      "video_processing_mode": {
+        "default": "mdi:video-input-component"
+      }
+    }
+  },
   "services": {
     "get_command": {
       "service": "mdi:console"
